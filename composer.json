@@ -1,0 +1,22 @@
+{
+    "name": "university/telegram-bot",
+    "description": "Telegram Chatbot for University Payments and Enrollment",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "UniversityBot\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "University Bot Team",
+            "email": "admin@university.edu"
+        }
+    ],
+    "minimum-stability": "stable"
+}

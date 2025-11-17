@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: university-telegram-bot
+    env: docker
+    plan: free
+    docker:
+      dockerfile: Dockerfile
+    envVars:
+      - key: BOT_TOKEN
+        value: your_telegram_bot_token_here
+      - key: WEBHOOK_URL
+        value: your_render_app_url_here
