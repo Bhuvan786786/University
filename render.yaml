@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: university-telegram-bot
+    name: university-chatbot
     env: docker
     plan: free
     docker:
@@ -8,5 +8,5 @@ services:
     envVars:
       - key: BOT_TOKEN
         value: your_telegram_bot_token_here
-      - key: WEBHOOK_URL
-        value: your_render_app_url_here
+    healthCheckPath: /health
+    autoDeploy: true

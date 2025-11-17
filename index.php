@@ -1,4 +1,21 @@
 <?php
+// Security headers - set via PHP instead of .htaccess
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+
+// Health check endpoint
+if ($_SERVER['REQUEST_URI'] === '/health') {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'healthy', 
+        'timestamp' => date('c'),
+        'service' => 'University Telegram Bot'
+    ]);
+    exit;
+}
+
 header('Content-Type: application/json');
 
 // Error logging
@@ -10,6 +27,12 @@ ini_set('error_log', __DIR__ . '/error.log');
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
 
+// For health checks and preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    echo json_encode(['status' => 'active', 'service' => 'University Telegram Bot']);
+    exit;
+}
+
 if (!$data) {
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => 'Invalid JSON']);
@@ -18,8 +41,6 @@ if (!$data) {
 
 // Bot configuration
 $botToken = getenv('BOT_TOKEN');
-$webhookUrl = getenv('WEBHOOK_URL');
-
 if (!$botToken) {
     error_log("BOT_TOKEN environment variable not set");
     http_response_code(500);
@@ -28,17 +49,15 @@ if (!$botToken) {
 }
 
 // Initialize bot
-$bot = new UniversityTelegramBot($botToken, $webhookUrl);
+$bot = new UniversityTelegramBot($botToken);
 $bot->handleUpdate($data);
 
 class UniversityTelegramBot {
     private $token;
-    private $webhookUrl;
     private $usersFile;
     
-    public function __construct($token, $webhookUrl = null) {
+    public function __construct($token) {
         $this->token = $token;
-        $this->webhookUrl = $webhookUrl;
         $this->usersFile = __DIR__ . '/users.json';
         $this->initializeUsersFile();
     }
@@ -153,7 +172,7 @@ class UniversityTelegramBot {
                "Follow these steps to enroll:\n\n" .
                "1. *Submit Application* - Complete online form\n" .
                "2. *Upload Documents* - Transcripts, ID, photo\n" .
-               "3. *Pay Application Fee* - $50 (non-refundable)\n" .
+               "3. *Pay Application Fee* - \$50 (non-refundable)\n" .
                "4. *Receive Acceptance* - Within 2-3 weeks\n" .
                "5. *Confirm Enrollment* - Pay deposit fee\n\n" .
                "📋 *Required Documents:*\n" .
@@ -208,7 +227,7 @@ class UniversityTelegramBot {
                "• Dean's Scholarship: 50% tuition\n" .
                "• Achievement Award: 25% tuition\n\n" .
                "💼 *Need-Based Aid*\n" .
-               "• Family income below $50,000\n" .
+               "• Family income below \$50,000\n" .
                "• Complete FAFSA application\n" .
                "• Submit tax documents\n\n" .
                "⚡ *Application Deadlines*\n" .
@@ -278,7 +297,7 @@ class UniversityTelegramBot {
         ];
         
         $context = stream_context_create($options);
-        file_get_contents($url, false, $context);
+        @file_get_contents($url, false, $context);
     }
 }
 
